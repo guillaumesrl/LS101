@@ -233,6 +233,7 @@ Lint/LiteralInInterpolation:
   AutoCorrect: false
   Enabled: true
 
+
 ##################### Performance ##################################
 
 Performance/Casecmp:
