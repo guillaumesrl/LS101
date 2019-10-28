@@ -46,6 +46,24 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
+def valid_first_player(first_player)
+  loop do
+    prompt "Who plays first ? (player/computer)"
+    first_player = gets.chomp
+    break if ['player', 'computer'].include?(first_player)
+    prompt "Not a valid choice"
+  end
+  return first_player
+end
+
+def alternate_player(current_player)
+  if current_player == 'player'
+    current_player = 'computer'
+  else
+    current_player = 'player'
+  end
+end
+
 def player_places_piece!(brd)
   square = ''
   loop do
@@ -57,22 +75,36 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
-def ai_defense(brd)
+def ai_computer!(brd, marker)
   WINNING_LINES.each do |line|
-    if brd.values_at(line[0], line[1], line[2]).count(PLAYER_MARKER) == 2 &&
+    if brd.values_at(line[0], line[1], line[2]).count(marker) == 2 &&
        brd.values_at(line[0], line[1], line[2]).count(INITIAL_MARKER) == 1
       line.each { |val| brd[val] = COMPUTER_MARKER if brd[val] == INITIAL_MARKER}
-    return 'played'
+      return 'played'
+    elsif brd[5] == INITIAL_MARKER
+      brd[5] = COMPUTER_MARKER
+      return 'played'
     end
   end
 end
 
 def computer_places_piece!(brd)
-  unless ai_defense(brd) == 'played'
+  unless ai_computer!(brd, COMPUTER_MARKER) == 'played' || ai_computer!(brd, PLAYER_MARKER) == 'played'
     square = empty_squares(brd).sample
     brd[square] = COMPUTER_MARKER
+    display_board(brd)
   end
 end
+
+def place_piece!(brd, player)
+  case player
+  when 'player'
+    player_places_piece!(brd)
+  when 'computer'
+    computer_places_piece!(brd)
+  end
+end
+
 
 def board_full?(brd)
   empty_squares(brd).empty?
@@ -104,22 +136,25 @@ end
 
 score_player = 0
 score_computer = 0
+current_player = ''
 
+
+prompt "Welcome in this Game ! First to five wins !"
+choose_current_player = valid_first_player(current_player)
 loop do
+
   board = initialize_board
   display_board(board)
-
+  
   loop do
-    player_places_piece!(board)
+    place_piece!(board, current_player)
     display_board(board)
-    break if someone_won?(board) || board_full?(board)
-    computer_places_piece!(board)
-    display_board(board)
+    current_player = alternate_player(current_player)
     break if someone_won?(board) || board_full?(board)
   end
 
   if someone_won?(board)
-    prompt "#{detect_winner(board)} won !"
+    prompt "#{detect_winner(board)} won this battle !"
   else
     prompt "it's a tie"
   end
@@ -130,4 +165,10 @@ loop do
   prompt "Wanna play again ? (y/n)"
   choice = gets.chomp
   break unless choice.downcase.start_with?('y')
+  if score_player == 5
+    prompt "You won the war !"
+  elsif score_computer == 5
+    prompt "Computer won the war"
+  end
+  current_player = choose_current_player
 end
