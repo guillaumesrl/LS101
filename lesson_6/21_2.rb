@@ -74,7 +74,7 @@ def display_game(player_cards, dealer_cards, step, phrase = nil)
   end
 end
 
-#display phrase if dealer is playing
+# display phrase if dealer is playing
 def display_phrase(phrase)
   if phrase
     prompt phrase
@@ -82,7 +82,6 @@ def display_phrase(phrase)
     puts ''
   end
 end
-
 
 # Deck is initialized and shuffled
 def initialize_deck
