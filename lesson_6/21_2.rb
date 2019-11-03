@@ -68,15 +68,21 @@ def display_game(player_cards, dealer_cards, step, phrase = nil)
     display_all_cards(player_cards, 'Your')
   when 2
     system 'clear'
-    if phrase
-      prompt phrase
-    else
-      puts ''
-    end
+    display_phrase(phrase)
     display_all_cards(dealer_cards, 'dealer\'s')
     display_all_cards(player_cards, 'your')
   end
 end
+
+#display phrase if dealer is playing
+def display_phrase(phrase)
+  if phrase
+    prompt phrase
+  else
+    puts ''
+  end
+end
+
 
 # Deck is initialized and shuffled
 def initialize_deck
