@@ -210,7 +210,7 @@ end
 
 def welcome
   prompt "Welcome to this game ! First to #{BUSTED_LIMIT} wins !"
-  continue_game
+  sleep 1.2
 end
 
 # play again question at the end of the game
