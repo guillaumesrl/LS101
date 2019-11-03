@@ -11,7 +11,7 @@ end
 
 # Deck is initialized and shuffled
 def initialize_deck
-  families = ['♠',	'♥', '♦', '♣']
+  families = ['♠', '♥', '♦', '♣']
   figures = ['A'] + [*'2'..'10'] + ['V', 'Q', 'K']
   deck = []
   families.each do |family|
@@ -35,11 +35,11 @@ def display_all_cards(cards, player)
     line1 << "   _____ "
     line2 << "  |     |"
     line3 << "  |  #{cards[counter][0]}  |"
-    if cards[counter][1].size < 2
-      line4 << "  |  #{cards[counter][1]}  |"
-    else
-      line4 << "  |  #{cards[counter][1]} |"
-    end
+    line4 <<  if cards[counter][1].size < 2
+              "  |  #{cards[counter][1]}  |"
+              else
+              "  |  #{cards[counter][1]} |"
+              end
     line5 << "  |_____|"
     counter += 1
     break if counter == cards.size
@@ -66,8 +66,8 @@ def display_one_card(cards, player)
   loop do
     line1 << "   _____ "
     line2 << "  |     |"
-    line3 << "  |  #{'?'}  |"
-    line4 << "  |  #{'?'}  |"
+    line3 << "  |  ?  |"
+    line4 << "  |  ?  |"
     line5 << "  |_____|"
     counter += 1
     break if counter == cards.size - 1
@@ -126,7 +126,7 @@ def busted?(cards)
   calculate_score(cards) > 21
 end
 
-# outter loop, initiate the game
+
 loop do
   prompt "Welcome to 21 ! First to 5 wins ! Ready ? "
   continue_game
@@ -134,14 +134,14 @@ loop do
   dealer_victories = 0
 
   loop do
-    answer = nil
-    player_cards, dealer_cards = [], []
+    player_cards = []
+    dealer_cards = []
     deck = initialize_deck
     initial_cards(deck, player_cards, dealer_cards)
     answer = nil
     validity = nil
 
-    # first inner loop, player plays until busted or stays
+    # player plays until busted or stays
     loop do
       display_game(player_cards, dealer_cards, validity)
       prompt "Will you hit or stay ?"
@@ -150,7 +150,7 @@ loop do
 
       if answer == 'stay' || busted?(player_cards)
         break
-      elsif !['hit','stay'].include?(answer)
+      elsif !['hit', 'stay'].include?(answer)
         validity = false
       end
       system 'clear'
@@ -165,6 +165,7 @@ loop do
       puts " "
       dealer_victories += 1
       prompt "Total Score - You : #{player_victories} - Dealer : #{dealer_victories}"
+      break if dealer_victories == 5
       continue_game
       next
     else
