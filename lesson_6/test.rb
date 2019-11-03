@@ -1,155 +1,211 @@
-SUITS = ['H', 'D', 'S', 'C']
-VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+require 'io/console'
 
-def prompt(msg)
-  puts "=> #{msg}"
+def prompt(message)
+  puts "=> #{message}"
 end
 
+def continue_game
+  prompt "Press any key to continue !"
+  STDIN.getch
+end
+
+# Deck is initialized and shuffled
 def initialize_deck
-  SUITS.product(VALUES).shuffle
-end
-
-def total(cards)
-  # cards = [['H', '3'], ['S', 'Q'], ... ]
-  values = cards.map { |card| card[1] }
-
-  sum = 0
-  values.each do |value|
-    if value == "A"
-      sum += 11
-    elsif value.to_i == 0 # J, Q, K
-      sum += 10
-    else
-      sum += value.to_i
+  families = ['♠', '♥', '♦', '♣']
+  figures = ['A'] + [*'2'..'10'] + ['V', 'Q', 'K']
+  deck = []
+  families.each do |family|
+    figures.each do |value|
+      deck << [family, value]
     end
   end
+  deck.shuffle
+end
 
-  # correct for Aces
-  values.select { |value| value == "A" }.count.times do
-    sum -= 10 if sum > 21
+# Displays ALL card for player, and for dealer when player choose to stay
+def display_all_cards(cards, player)
+  line1 = ''
+  line2 = ''
+  line3 = ''
+  line4 = ''
+  line5 = ''
+  counter = 0
+
+  loop do
+    line1 << "   _____ "
+    line2 << "  |     |"
+    line3 << "  |  #{cards[counter][0]}  |"
+    line4 <<  if cards[counter][1].size < 2
+              "  |  #{cards[counter][1]}  |"
+              else
+              "  |  #{cards[counter][1]} |"
+              end
+    line5 << "  |_____|"
+    counter += 1
+    break if counter == cards.size
   end
 
-  sum
+  puts "  #{player} cards are :"
+  puts line1, line2, line3, line4, line5, ' '
 end
 
-def busted?(cards)
-  total(cards) > 21
-end
+# Displays only one card for dealer and ? for the second one
+def display_one_card(cards, player)
+  line1 = "   _____ "
+  line2 = "  |     |"
+  line3 = "  |  #{cards[0][0]}  |"
+  # Trick to handle the display of a two digit card (10)
+  line4 = if cards[0][1].size < 2
+            "  |  #{cards[0][1]}  |"
+          else
+            "  |  #{cards[0][1]} |"
+          end
+  line5 = "  |_____|"
+  counter = 0
 
-# :tie, :dealer, :player, :dealer_busted, :player_busted
-def detect_result(dealer_cards, player_cards)
-  player_total = total(player_cards)
-  dealer_total = total(dealer_cards)
-
-  if player_total > 21
-    :player_busted
-  elsif dealer_total > 21
-    :dealer_busted
-  elsif dealer_total < player_total
-    :player
-  elsif dealer_total > player_total
-    :dealer
-  else
-    :tie
+  loop do
+    line1 << "   _____ "
+    line2 << "  |     |"
+    line3 << "  |  ?  |"
+    line4 << "  |  ?  |"
+    line5 << "  |_____|"
+    counter += 1
+    break if counter == cards.size - 1
   end
+
+  puts "  #{player} cards are :"
+  puts line1, line2, line3, line4, line5, ' '
 end
 
-def display_result(dealer_cards, player_cards)
-  result = detect_result(dealer_cards, player_cards)
-
-  case result
-  when :player_busted
-    prompt "You busted! Dealer wins!"
-  when :dealer_busted
-    prompt "Dealer busted! You win!"
-  when :player
-    prompt "You win!"
-  when :dealer
-    prompt "Dealer wins!"
-  when :tie
-    prompt "It's a tie!"
-  end
+# Displays the game for first round
+def display_game(player_cards, dealer_cards, validity)
+  system 'clear'
+  display_one_card(dealer_cards, 'Dealer\'s')
+  display_all_cards(player_cards, 'Your')
+  prompt "Not a valid choice !" if validity == false
 end
 
-def play_again?
-  puts "-------------"
-  prompt "Do you want to play again? (y or n)"
-  answer = gets.chomp
-  answer.downcase.start_with?('y')
-end
-
-loop do
-  prompt "Welcome to Twenty-One!"
-
-  # initialize vars
-  deck = initialize_deck
-  player_cards = []
-  dealer_cards = []
-
-  # initial deal
+# First two cards for each player
+def initial_cards(deck, player_cards, dealer_cards)
   2.times do
     player_cards << deck.pop
     dealer_cards << deck.pop
   end
-
-  prompt "Dealer has #{dealer_cards[0]} and ?"
-  prompt "You have: #{player_cards[0]} and #{player_cards[1]}, for a total of #{total(player_cards)}."
-
-  # player turn
-  loop do
-    player_turn = nil
-    loop do
-      prompt "Would you like to (h)it or (s)tay?"
-      player_turn = gets.chomp.downcase
-      break if ['h', 's'].include?(player_turn)
-      prompt "Sorry, must enter 'h' or 's'."
-    end
-
-    if player_turn == 'h'
-      player_cards << deck.pop
-      prompt "You chose to hit!"
-      prompt "Your cards are now: #{player_cards}"
-      prompt "Your total is now: #{total(player_cards)}"
-    end
-
-    break if player_turn == 's' || busted?(player_cards)
-  end
-
-  if busted?(player_cards)
-    display_result(dealer_cards, player_cards)
-    play_again? ? next : break
-  else
-    prompt "You stayed at #{total(player_cards)}"
-  end
-
-  # dealer turn
-  prompt "Dealer turn..."
-
-  loop do
-    break if total(dealer_cards) >= 17
-
-    prompt "Dealer hits!"
-    dealer_cards << deck.pop
-    prompt "Dealer's cards are now: #{dealer_cards}"
-  end
-
-  if busted?(dealer_cards)
-    prompt "Dealer total is now: #{total(dealer_cards)}"
-    display_result(dealer_cards, player_cards)
-    play_again? ? next : break
-  else
-    prompt "Dealer stays at #{total(dealer_cards)}"
-  end
-
-  # both player and dealer stays - compare cards!
-  puts "=============="
-  prompt "Dealer has #{dealer_cards}, for a total of: #{total(dealer_cards)}"
-  prompt "Player has #{player_cards}, for a total of: #{total(player_cards)}"
-  puts "=============="
-
-  display_result(dealer_cards, player_cards)
-
-  break unless play_again?
 end
 
-prompt "Thank you for playing Twenty-One! Good bye!"
+# New card
+def new_card!(cards, deck)
+  cards << deck.pop
+end
+
+# return the score
+def calculate_score(cards)
+  score_arr = cards.map do |arr|
+    if arr[1].to_i > 0
+      arr[1].to_i
+    elsif arr[1] == 'A'
+      11
+    else
+      10
+    end
+  end
+
+  loop do
+    if score_arr.sum > 21 && score_arr.include?(11)
+      score_arr[score_arr.find_index(11)] = 1
+    else
+      break
+    end
+  end
+
+  score_arr.sum
+end
+
+# Return true if score > 21
+def busted?(cards)
+  calculate_score(cards) > 21
+end
+
+
+loop do
+  prompt "Welcome to 21 ! First to 5 wins ! Ready ? "
+  continue_game
+  player_victories = 0
+  dealer_victories = 0
+
+  loop do
+    player_cards = []
+    dealer_cards = []
+    deck = initialize_deck
+    initial_cards(deck, player_cards, dealer_cards)
+    answer = nil
+    validity = nil
+
+    # player plays until busted or stays
+    loop do
+      display_game(player_cards, dealer_cards, validity)
+      prompt "Will you hit or stay ?"
+      answer = gets.chomp.downcase
+    
+      new_card!(player_cards, deck) && validity = true if answer == 'hit'
+
+      if answer == 'stay' || busted?(player_cards)
+        break
+      elsif !['hit', 'stay'].include?(answer)
+        validity = false
+      end
+      system 'clear'
+    end
+
+    # displays all cards + score if busted
+    if busted?(player_cards)
+      system 'clear'
+      display_all_cards(dealer_cards, 'dealer\'s')
+      display_all_cards(player_cards, 'your')
+      prompt "Busted ! You : #{calculate_score(player_cards)} / Dealer : #{calculate_score(dealer_cards)}"
+      puts " "
+      dealer_victories += 1
+      prompt "Total Score - You : #{player_victories} - Dealer : #{dealer_victories}"
+      break if dealer_victories == 5
+      continue_game
+      next
+    else
+      prompt "You chose to stay, let's see who'll win !"
+      continue_game
+    end
+
+    loop do
+      system 'clear'
+      puts " "
+      prompt "Dealer is playing !"
+      display_all_cards(dealer_cards, 'dealer\'s')
+      display_all_cards(player_cards, 'your')
+      dealer_score = calculate_score(dealer_cards)
+      if dealer_score < 17
+        new_card!(dealer_cards, deck)
+      else
+        break
+      end
+      sleep 2
+    end
+
+    dealer_score = calculate_score(dealer_cards)
+    player_score = calculate_score(player_cards)
+    if player_score > dealer_score || dealer_score > 21
+      prompt "Congratulations, you won ! You : #{player_score} / Dealer : #{dealer_score}"
+      player_victories += 1
+    else
+      prompt "You lose ! You : #{player_score} / Dealer : #{dealer_score}"
+      dealer_victories += 1
+    end
+    prompt "Total Score - You : #{player_victories} - Dealer : #{dealer_victories}"
+    break if player_victories == 5 || dealer_victories == 5
+    continue_game
+  end
+
+  prompt "You want to play again ? (y/n)"
+  answer = gets.chomp.downcase
+  break if answer.downcase == 'n'
+end
+
+prompt "See you soon"

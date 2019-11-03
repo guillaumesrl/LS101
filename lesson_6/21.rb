@@ -78,11 +78,18 @@ def display_one_card(cards, player)
 end
 
 # Displays the game for first round
-def display_game(player_cards, dealer_cards, validity)
-  system 'clear'
-  display_one_card(dealer_cards, 'Dealer\'s')
-  display_all_cards(player_cards, 'Your')
-  prompt "Not a valid choice !" if validity == false
+def display_game(player_cards, dealer_cards, validity, step)
+  case step
+  when 'step1'
+    system 'clear'
+    display_one_card(dealer_cards, 'Dealer\'s')
+    display_all_cards(player_cards, 'Your')
+    prompt "Not a valid choice !" if validity == false
+  when 'step2'
+    system 'clear'
+    display_all_cards(dealer_cards, 'dealer\'s')
+    display_all_cards(player_cards, 'your')
+  end
 end
 
 # First two cards for each player
@@ -126,6 +133,46 @@ def busted?(cards)
   calculate_score(cards) > 21
 end
 
+def player_hit_or_stay!(player_cards, dealer_cards, deck, validity)
+  answer = nil
+  loop do
+    display_game(player_cards, dealer_cards, validity, 'step1')
+    prompt "Will you (h)it or (s)tay ?"
+    answer = gets.chomp.downcase
+    new_card!(player_cards, deck) && validity = true if answer == 'h'
+    if answer == 's' || busted?(player_cards)
+      break
+    elsif !['h', 's'].include?(answer)
+      validity = false
+    end
+    system 'clear'
+  end
+end
+
+def dealer_hit_or_stay!(player_cards, dealer_cards, deck, validity)
+  loop do
+    system 'clear'
+    puts " "
+    prompt "Dealer is playing !"
+    display_game(player_cards, dealer_cards, validity, 'step2')
+    dealer_score = calculate_score(dealer_cards)
+    if dealer_score < 17
+      new_card!(dealer_cards, deck)
+    else
+      break
+    end
+    sleep 2
+  end
+end
+
+def display_busted(player_cards, dealer_cards)
+  prompt "Busted ! You : #{calculate_score(player_cards)} / Dealer : #{calculate_score(dealer_cards)}"
+  puts " "
+end
+
+def display_total_score(player_victories, dealer_victories)
+  prompt "Total Score - You : #{player_victories} - Dealer : #{dealer_victories}"
+end
 
 loop do
   prompt "Welcome to 21 ! First to 5 wins ! Ready ? "
@@ -142,29 +189,14 @@ loop do
     validity = nil
 
     # player plays until busted or stays
-    loop do
-      display_game(player_cards, dealer_cards, validity)
-      prompt "Will you hit or stay ?"
-      answer = gets.chomp.downcase
-      new_card!(player_cards, deck) && validity = true if answer == 'hit'
-
-      if answer == 'stay' || busted?(player_cards)
-        break
-      elsif !['hit', 'stay'].include?(answer)
-        validity = false
-      end
-      system 'clear'
-    end
-
+    player_hit_or_stay!(player_cards, dealer_cards, deck, validity)
     # displays all cards + score if busted
     if busted?(player_cards)
       system 'clear'
-      display_all_cards(dealer_cards, 'dealer\'s')
-      display_all_cards(player_cards, 'your')
-      prompt "Busted ! You : #{calculate_score(player_cards)} / Dealer : #{calculate_score(dealer_cards)}"
-      puts " "
+      display_game(player_cards, dealer_cards, validity, 'step2')
+      display_busted(player_cards, dealer_cards)
       dealer_victories += 1
-      prompt "Total Score - You : #{player_victories} - Dealer : #{dealer_victories}"
+      display_total_score(player_victories, dealer_victories)
       break if dealer_victories == 5
       continue_game
       next
@@ -173,20 +205,8 @@ loop do
       continue_game
     end
 
-    loop do
-      system 'clear'
-      puts " "
-      prompt "Dealer is playing !"
-      display_all_cards(dealer_cards, 'dealer\'s')
-      display_all_cards(player_cards, 'your')
-      dealer_score = calculate_score(dealer_cards)
-      if dealer_score < 17
-        new_card!(dealer_cards, deck)
-      else
-        break
-      end
-      sleep 2
-    end
+    dealer_hit_or_stay!(player_cards, dealer_cards, deck, validity)
+
 
     dealer_score = calculate_score(dealer_cards)
     player_score = calculate_score(player_cards)
