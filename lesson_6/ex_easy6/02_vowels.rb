@@ -1,5 +1,9 @@
+# def remove_vowels(arr)
+#   arr.map { |word| word.chars.map {|char| char unless 'aeiouAEIOU'.include?(char)}.join}
+# end
+
 def remove_vowels(arr)
-  arr.map { |char| char unless 'aeiouy'.includes(char)}
+  arr.map { |word| word.delete('aeiouAEIOU')}
 end
 
 
