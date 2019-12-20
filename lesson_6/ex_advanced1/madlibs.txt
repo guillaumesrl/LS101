@@ -1,0 +1,2 @@
+The %{adjective} %{colour} %{noun} noisily
+licks the %{adjective} %{colour}
