@@ -1,12 +1,24 @@
+# def rotate90(matrix)
+#   row_numbers = matrix.size
+#   col_numbers = matrix.first.size
+#   new_matrix = []
+#   (0...col_numbers).each do |col|
+#     row = (0...row_numbers).to_a.reverse.map { |row| matrix[row][col]}
+#     new_matrix << row
+#   end
+#   new_matrix
+# end
+
 def rotate90(matrix)
-  row_numbers = matrix.size
-  col_numbers = matrix.first.size
-  new_matrix = []
-  (0...col_numbers).each do |col|
-    row = (0...row_numbers).to_a.reverse.map { |row| matrix[row][col]}
-    new_matrix << row
+  rows = matrix.size
+  cols = matrix.first.size
+  new_arr = Array.new(cols) {Array.new(rows)}
+  (0...cols).each do |col|
+    (0...rows).to_a.reverse.each do |row|
+      new_arr[col][row] = matrix[row][col]
+    end
   end
-  new_matrix
+  new_arr
 end
 
 matrix1 = [
