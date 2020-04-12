@@ -30,7 +30,12 @@ class Player
                  card.value.to_i
                end
     end
-    cards.select { |card| card.ace? }.count.times do
+    total = correct_aces(total)
+  end
+
+  # just splut total_hand in two methods for rubocop compliance
+  def correct_aces(total)
+    cards.select(&:ace?).count.times do
       total -= 10 if total > BUSTED_LIMIT
     end
     total
@@ -47,7 +52,7 @@ class Player
     lines.each_value { |value| puts value }
     puts ''
   end
-  
+
   # Generate all cards by modifying lines hash
   def generate_all_cards!(lines)
     counter = 0
@@ -68,10 +73,8 @@ class Player
   end
 end
 
-
 class Dealer < Player
-
-  def display_one_card #(cards, player)
+  def display_one_card
     line1 = "   _____    _____ "
     line2 = "  |     |  |     |"
     line3 = "  |  #{cards[0].family}  |  |  ?  |"
@@ -82,7 +85,7 @@ class Dealer < Player
               "  |  #{cards[0].value} |  |  ?  |"
             end
     line5 = "  |_____|  |_____|"
-  
+
     puts "  Dealer's cards are :"
     puts line1, line2, line3, line4, line5, ' '
   end
@@ -111,17 +114,13 @@ class Deck
   attr_reader :cards
 
   def initialize
-    @cards = initialize_deck
-  end
-
-  def initialize_deck
-    deck = []
+    @cards = []
     Card::FAMILIES.each do |family|
       Card::VALUES.each do |value|
-        deck << Card.new(family, value)
+        @cards << Card.new(family, value)
       end
     end
-    deck.shuffle
+    @cards.shuffle!
   end
 
   def deal_one_card
@@ -143,17 +142,12 @@ class Game
 
   def start
     reset_total_score
-
     loop do
       display_welcome_message
       while player_dealer_under_5?
-        # INITIALIZE DECK MISSING
-        @step = 1
         reset_cards
-
         deal_initial_cards
         player_hit_or_stay!
-        @step = 2
 
         if player.busted?
           display_winner_round
@@ -178,7 +172,7 @@ class Game
     display_goodbye_message
   end
 
-private
+  private
 
   def prompt(message)
     puts "=> #{message}"
@@ -220,7 +214,8 @@ private
   end
 
   def reset_cards
-    deck.initialize_deck
+    @step = 1
+    @deck = Deck.new
     player.reset_cards
     dealer.reset_cards
   end
@@ -270,6 +265,7 @@ private
         break
       end
     end
+    @step = 2
   end
 
   def dealer_hit_or_stay!
@@ -279,7 +275,6 @@ private
       puts " "
       prompt "Dealer is playing !"
       display_game(phrase)
-      #dealer_score = calculate_total(dealer_cards)
       if dealer.total_hand < Player::DEALER_LIMIT
         dealer.add_card(deck.deal_one_card)
       else
@@ -291,34 +286,29 @@ private
   end
 
   def calculate_winner_round
-    if player.total_hand > Player::BUSTED_LIMIT
-      'player busted'
-    elsif dealer.total_hand > Player::BUSTED_LIMIT
-      'dealer busted'
-    elsif dealer.total_hand < player.total_hand
-      'player'
-    elsif dealer.total_hand > player.total_hand
-      'dealer'
-    else
-      'tie'
-    end
+    return 'player busted' if player.total_hand > Player::BUSTED_LIMIT
+    return 'dealer busted' if dealer.total_hand > Player::BUSTED_LIMIT
+    return 'player' if dealer.total_hand < player.total_hand
+    return 'dealer' if dealer.total_hand > player.total_hand
+    'tie'
   end
-
 
   def display_winner_round
     winner_round = calculate_winner_round
+    player_hand = player.total_hand
+    dealer_hand = dealer.total_hand
     display_game
     case winner_round
     when 'dealer busted'
-      prompt "Dealer busted ! You won #{player.total_hand} - #{dealer.total_hand}"
+      prompt "Dealer busted ! You won #{player_hand} - #{dealer_hand}"
     when 'player busted'
-      prompt "You busted ! Dealer won #{dealer.total_hand} - #{player.total_hand}"
+      prompt "You busted ! Dealer won #{dealer_hand} - #{player_hand}"
     when 'dealer'
-      prompt "Dealer won #{dealer.total_hand} - #{player.total_hand} !"
+      prompt "Dealer won #{dealer_hand} - #{player_hand} !"
     when 'player'
-      prompt "You won #{player.total_hand} - #{dealer.total_hand}"
+      prompt "You won #{player_hand} - #{dealer_hand}"
     when 'tie'
-      prompt "It's a tie! #{player.total_hand} - #{dealer.total_hand}"
+      prompt "It's a tie! #{player_hand} - #{dealer_hand}"
     end
   end
 
@@ -343,14 +333,15 @@ private
   end
 
   def display_game_score
-    winner_game = winner_game?
-    case winner_game
+    player_total_score = player.total_score
+    dealer_total_score = dealer.total_score
+    case winner_game?
     when 'player'
-      prompt "You won this game #{player.total_score} - #{dealer.total_score} !"
+      prompt "You won this game #{player_total_score} - #{dealer_total_score}"
     when 'dealer'
-      prompt "Dealer won this game #{dealer.total_score} - #{player.total_score} ! "
+      prompt "Dealer won this game #{dealer_total_score} - #{player_total_score}"
     when 'no'
-      prompt "Game score : You #{player.total_score} , Dealer : #{dealer.total_score}"
+      prompt "Game score : You #{player_total_score} , Dealer : #{dealer_total_score}"
     end
     puts ''
     continue_game
@@ -365,17 +356,10 @@ private
     loop do
       prompt "Do you want to play again ? Y/N"
       answer = gets.chomp.downcase
-      if answer == 'y'
-        answer = true
-        break
-      elsif answer == 'n'
-        answer = false
-        break
-      else
-        prompt "Not a correct choice"
-      end
+      break if ['y', 'n'].include?(answer)
+      prompt "Not a correct choice"
     end
-    answer
+    answer == 'y' ? true : false
   end
 end
 
