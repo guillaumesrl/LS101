@@ -22,3 +22,18 @@ class Trinary
 end
 
 p Trinary.new('183').to_decimal
+
+# class Trinary
+
+#   def initialize(str)
+#     @trinary = str
+#   end
+
+#   def to_decimal
+#     @trinary =~ /[^0-2]/ ? 0 : calculate
+#   end
+
+#   def calculate
+#     @trinary.chars.reverse.map(&:to_i).each_with_index.map {|num, idx| num*3**idx }.sum
+#   end
+# end

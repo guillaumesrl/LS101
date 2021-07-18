@@ -9,16 +9,13 @@ class Bst
   end
 
   def insert(value)
-    new = Bst.new(value)
-    attribution(self, new)
+    if value <= data
+      left.nil? ? left = Bst.new : right.insert(value)
+    else 
+      right.nil? ? right = Bst.new : left.insert(value)
+    end
   end
 
-  def attribution(obj, new)
-    if new.data <= obj.data
-      obj.left.nil? ? obj.left = new : attribution(obj.left, new)
-    else 
-      obj.right.nil? ? obj.right = new : attribution(obj.right, new)
-    end
   end
 
   def each
@@ -36,7 +33,18 @@ class Bst
     obj.left.nil? ? nil : (sorted.insert(sorted.index(obj.data),obj.left.data)) && lookup(sorted, obj.left)
     obj.right.nil? ? nil : (sorted.insert(sorted.index(obj.data)+1,obj.right.data)) && lookup(sorted, obj.right)
   end
+
+  def test
+    left
+  end
 end
+
+four = Bst.new(4)
+four.insert(2)
+four.insert(5)
+four.insert(3)
+
+p four.test
 
 
 

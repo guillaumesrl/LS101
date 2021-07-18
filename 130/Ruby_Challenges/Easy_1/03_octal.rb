@@ -13,11 +13,30 @@ class Octal
 
   def calculate
     result = 0
-    @octal_num.chars.reverse.each_with_index do |num, index|
-      result += num.to_i*8**index
+    @octal_num.chars.map(&:to_i).reverse.each_with_index do |num, index|
+      result += num*8**index
     end
     result
   end
 end
 
-p Octal.new('183').to_decimal
+# class Octal
+
+#   def initialize(octal)
+#     @octal = octal.chars
+#   end
+
+#   def to_decimal
+#     return 0 if unvalid
+#     result = 0
+#     @octal.reverse.each_with_index do |num, idx|
+#       result += num.to_i * 8**idx
+#     end
+#     result
+#   end
+
+#   def unvalid
+#     @octal.any? { |el| el =~ /[^0-7]/ }
+#   end
+
+# end

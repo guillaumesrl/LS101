@@ -1,14 +1,38 @@
-def reduce(collection)
-  acc = ''
-  counter = 0
-  while counter < collection.size
-    acc = yield(acc, collection[counter])
+
+
+
+def prime_factors(n)
+  factors = {}
+  number = n
+  counter = 2
+  while counter <= number
+    if number % counter == 0
+      number /= counter
+      factors[counter] ? factors[counter] += 1 : factors[counter] = 1
+    end
     counter += 1
   end
-  acc
+  factors
 end
 
 
-a = [1,2,'a']
+# def prime_factors(n)
+#   hash = {}
+#   p = 2
+#   while p <= n
+#     if n % p == 0
+#       n /= p
+#       if hash[p]
+#         hash[p] += 1
+#       else
+#         hash[p] = 1
+#       end
+#     else
+#       p += 1
+#     end
+#   end
+#   hash
+# end
 
-p reduce([[1,2], ['a','b']]) { |acc, el| acc + el.to_s}
+
+p prime_factors(7775460)

@@ -1,13 +1,7 @@
-TABLE = { 
-1 => 'I', 
-2 => 'II',
-3 => 'III',
-4 => 'IV',
-5 => 'V',
-6 => 'VI',
-7 => 'VII',
-8 => 'VIII',
-9 => 'IX',
-10 => 'X',
 
+ROMANS_TABLES = {
+  1 => %w(I II III IV V VI VII VIII IX X),
+  10 => %w(X XX XXX XL L LX LXX LXXX XC),
+  100 => %w(C CC CCC CD D DC DCC DCCC CM),
+  1000 => %w(M MM MMM)
 }

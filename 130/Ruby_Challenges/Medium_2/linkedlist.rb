@@ -38,7 +38,7 @@ class SimpleLinkedList
   end
 
   def to_a
-    @list.map(&:datum).reverse
+    @list.map(&:datum)
   end
 
   def head
